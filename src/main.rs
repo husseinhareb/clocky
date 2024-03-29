@@ -2,7 +2,6 @@ use std::thread;
 use std::time::Duration;
 use chrono::{Local, Timelike};
 use std::io::Write;
-use std::process::Command;
 
 mod numbers;
 
@@ -31,9 +30,42 @@ fn main() {
         Number::new(9, numbers::NINE),
     ];
 
-    println!("{}",numbers[0].ascii)
+    // Number of rows in each ASCII art (assuming all ASCII arts have the same height)
+    let rows = numbers[0].ascii.lines().count();
 
+    // Iterate over each row of the ASCII arts
+    for i in 0..rows {
+        // Iterate over each number
+        for num in &numbers {
+            // Print the ith row of the ASCII art for the current number
+            print!("{:8}", num.ascii.lines().nth(i).unwrap()); // Adjust the spacing as needed
+        }
+        // Move to the next line after printing all numbers for the current row
+        println!();
+    }
+    loop {
+        let local_time = Local::now();
+
+        let hour = local_time.hour();
+        let minute = local_time.minute();
+        let second = local_time.second();
+
+        let hour_tens = hour/ 10;
+        let hour_units = hour % 10;
+
+        let minute_tens = minute/ 10;
+        let minute_units = minute % 10;
+
+        let second_tens = second / 10;
+        let second_units = second % 10;
+
+        print!("{}{}:{}{}:{}{}\r", hour_tens,hour_units, minute_tens,minute_units, second_tens,second_units);
+        std::io::stdout().flush().unwrap();
+
+        thread::sleep(Duration::from_secs(1));
+    }
 }
+
 
 
 
