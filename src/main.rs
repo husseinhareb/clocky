@@ -1,25 +1,24 @@
 // src/main.rs
 use chrono::Local;
-use std::{thread, time::Duration, io::{self, Write}};
+use std::{
+    io::{self, Write},
+    thread,
+    time::Duration,
+};
+
 mod numbers;
-use numbers::{ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, COLON};
+use numbers::{COLON, EIGHT, FIVE, FOUR, NINE, ONE, SEVEN, SIX, THREE, TWO, ZERO};
 
-/// Clears the terminal screen and moves the cursor to the top-left corner
-fn clear_screen() {
-    // ANSI escape code: clear screen and move cursor to (1,1)
-    print!("\x1B[2J\x1B[H");
-}
+/// Draws the current time in big ASCII art at the current cursor position.
+fn draw_clock() {
+    let now = Local::now();
+    let time_str = now.format("%H:%M:%S").to_string();
 
-fn main() {
-    loop {
-        clear_screen();
-        let now = Local::now();
-        let time_str = now.format("%H:%M:%S").to_string();
-
-        // Split each character's ASCII art into lines
-        let arts: Vec<Vec<&str>> = time_str.chars().map(|ch| {
+    // Build a vector of 5-line slices for each character
+    let arts: Vec<Vec<&str>> = time_str
+        .chars()
+        .map(|ch| {
             let art = match ch {
-                ':' => COLON,
                 '0' => ZERO,
                 '1' => ONE,
                 '2' => TWO,
@@ -30,20 +29,33 @@ fn main() {
                 '7' => SEVEN,
                 '8' => EIGHT,
                 '9' => NINE,
+                ':' => COLON,
                 _ => COLON,
             };
             art.lines().skip(1).collect()
-        }).collect();
+        })
+        .collect();
 
-        // There are 5 rows per character
-        for row in 0..5 {
-            for art in &arts {
-                print!("{}  ", art[row]);
-            }
-            println!();
+    // Print row by row
+    for row in 0..5 {
+        for art in &arts {
+            print!("{}  ", art[row]);
         }
+        println!();
+    }
+}
 
-        io::stdout().flush().unwrap();
+fn main() {
+    // Draw the clock once at startup
+    draw_clock();
+    io::stdout().flush().unwrap();
+
+    loop {
         thread::sleep(Duration::from_secs(1));
+
+        // Move cursor up 5 lines (so we overwrite exactly where we drew)
+        print!("\x1B[5A");
+        draw_clock();
+        io::stdout().flush().unwrap();
     }
 }
